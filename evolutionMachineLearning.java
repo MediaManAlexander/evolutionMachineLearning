@@ -6,7 +6,7 @@ class evolutionMachineLearning {
     static Random random = new Random();
     static String targetString;
     
-    static ArrayList<String> populationList = new ArrayList<String>();
+    static ArrayList<Agent> populationList = new ArrayList<Agent>();
 
     public static String replaceCharInStr(String str, char newChar, int index) {
         String beginStr = str.substring(0, index);
@@ -24,13 +24,7 @@ class evolutionMachineLearning {
 
     public static void populate(int populationSize) {
         for (int i = 0; i < populationSize; i++) {
-            String currStr = "";
-
-            for (int j = 0; j < targetString.length(); j++) {
-                currStr += rngChar();
-            }
-
-            populationList.add(currStr);
+            populationList.add(new Agent(populationList, targetString.length()))
         }
     }
 
@@ -66,6 +60,21 @@ class evolutionMachineLearning {
         return resultString;
     }
 
+    // This is a function for breeding methods which takes the population and splits it into groups,
+    // the most fit of each group becomes a parent. The function returns an array of parents.
+    public Agent[] tournamentSelection(int numGroups) {
+        if (populationList.size() % numGroups == 0) {
+            Agent[] parents = new Agent[numGroups];
+            for (int i = 0; i < numGroups; i++) {
+                Agent bestFit = populationList.get(0);
+                for (int j = 1; j < populationList.size() / numGroups; j++) {
+                    if (populationList.get(populationList.size() / numGroups * i + j))
+                        populationList.
+                }
+            }
+        }
+    }
+
     
 
     public static void main(String[] args) {
@@ -82,6 +91,10 @@ class evolutionMachineLearning {
         int currentGeneration = 1;
 
         populate(populationSize);
+
+        for (Agent agent : populationList) {
+            agent.calcFitness(targetString);
+        }
 
         while (true) {
             // The position in populationList of the strings with the highest and the second highest accuracy
@@ -135,21 +148,28 @@ class evolutionMachineLearning {
 }
 
 class Agent {
-    String genes;
-    double fitness;
     Random random = new Random();
 
-    public Agent(int geneLen) {
+    ArrayList<Agent> population; // The population this agent is a part of
+    int generationsAlive = 0; // How many generations has this agent lived through 
+    
+    String genes;
+    double fitness;
+    
+
+    public Agent(ArrayList<Agent> population, int geneLen) {
+        this.population = population;
+
         for (int j = 0; j < geneLen; j++) {
             this.genes += evolutionMachineLearning.rngChar();
         }
     }
 
-    public Agent(Agent parent1, Agent parent2, int maxMutations) {
-        int startGenesCutoff = (int) Math.ceil((parent1.genes.length() / 2.0)); // Finds where the middle of string is, if the string is odd in size, then it will round up
+    public Agent(ArrayList<Agent> population, Agent parent1, Agent parent2, int maxMutations) {
+        int midpoint = (int) Math.ceil((parent1.genes.length() / 2.0)); // Finds where the middle of string is, if the string is odd in size, then it will round up
 
-        String startGenes = parent1.genes.substring(0, startGenesCutoff);
-        String endGenes = parent2.genes.substring(startGenesCutoff, parent2.genes.length());
+        String startGenes = parent1.genes.substring(0, midpoint);
+        String endGenes = parent2.genes.substring(midpoint, parent2.genes.length());
 
         String resultGenes = startGenes + endGenes;
 
@@ -160,6 +180,43 @@ class Agent {
         }
 
         this.genes = resultGenes;
+    }
+
+    public int breed(Agent mate, int maxMutations, int numOffspring) {
+        for (int i = 0; i < numOffspring; i++) {
+            this.population.add(new Agent(this.population, this, mate, maxMutations));
+        }
+
+        return 0; // Agent was able to breed successfully
+    }
+
+    public void die() {
+        this.population.remove(this);
+    }
+
+    public int advanceGeneration(int chanceOfDeath) {
+        this.generationsAlive++;
+
+        if (this.random.nextDouble() < chanceOfDeath) {
+            this.die();
+            return 1; // Code for agent death
+        }
+
+        return 0; // Code for agent successfully making it to the next generation.
+    }
+
+    public void calcFitness(String target) {
+        int strSize = target.length();
+        int numCorrect = 0;
+
+        for (int i = 0; i < strSize; i++) {
+
+            if (this.genes.charAt(i) == target.charAt(i)) {
+                numCorrect++;
+            }
+        }
+
+        fitness = (double) numCorrect / strSize;
     }
 
     public void reconstructGenes(int newGeneLen) {
