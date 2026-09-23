@@ -133,3 +133,38 @@ class evolutionMachineLearning {
 
     }
 }
+
+class Agent {
+    String genes;
+    double fitness;
+    Random random = new Random();
+
+    public Agent(int geneLen) {
+        for (int j = 0; j < geneLen; j++) {
+            this.genes += evolutionMachineLearning.rngChar();
+        }
+    }
+
+    public Agent(Agent parent1, Agent parent2, int maxMutations) {
+        int startGenesCutoff = (int) Math.ceil((parent1.genes.length() / 2.0)); // Finds where the middle of string is, if the string is odd in size, then it will round up
+
+        String startGenes = parent1.genes.substring(0, startGenesCutoff);
+        String endGenes = parent2.genes.substring(startGenesCutoff, parent2.genes.length());
+
+        String resultGenes = startGenes + endGenes;
+
+        for (int i = 0; i < this.random.nextInt(1, maxMutations); i++) {
+            int mutatedCharPos = random.nextInt(0, resultGenes.length());
+
+            resultGenes = evolutionMachineLearning.replaceCharInStr(resultGenes, evolutionMachineLearning.rngChar(), mutatedCharPos);
+        }
+
+        this.genes = resultGenes;
+    }
+
+    public void reconstructGenes(int newGeneLen) {
+        for (int j = 0; j < newGeneLen; j++) {
+            this.genes += evolutionMachineLearning.rngChar();
+        }
+    }
+}
