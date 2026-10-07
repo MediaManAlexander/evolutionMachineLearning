@@ -43,7 +43,7 @@ class evolutionMachineLearning {
         return (double) numCorrect / strSize;
     }
 
-    public Agent bestFitness(ArrayList<Agent> agentList) {
+    public static Agent bestFitness(ArrayList<Agent> agentList) {
         Agent bestFit = agentList.get(0);
 
         for (Agent agent : agentList) {
@@ -74,14 +74,33 @@ class evolutionMachineLearning {
 
     // This is a function for breeding methods which takes the population and splits it into groups,
     // the most fit of each group becomes a parent. The function returns an array of parents.
-    public ArrayList<Agent> tournamentSelection(int numGroups) {
-        int groupSize = Math.round(populationList.size() / numGroups);
-        if (populationList.size() % numGroups != 0) {
-            while (populationList.size() % groupSize != 0) {
-                groupSize++;
-            }
+    public static ArrayList<Agent> tournamentSelection(int numGroups) {
+        if (numGroups <= 0) numGroups = 1;
+        if (numGroups > populationList.size()) numGroups = populationList.size();
+
+        // Make sure numGroups is even
+        if (numGroups % 2 != 0) numGroups++;
+
+        ArrayList<Agent> parents = new ArrayList<Agent>();
+
+        ArrayList<Agent>[] groups = new ArrayList[numGroups];
+        for (int i = 0; i < groups.length; i++) {
+            groups[i] = new ArrayList<Agent>();
         }
         
+        int currGroup = 0;
+        for (Agent agent : populationList) {
+            groups[currGroup].add(agent);
+
+            currGroup++;
+            if (currGroup > (numGroups - 1)) currGroup = 0;
+        }
+
+        for (ArrayList<Agent> group : groups) {
+            parents.add(bestFitness(group));
+        }
+
+        return parents;
     }
 
     
@@ -95,11 +114,14 @@ class evolutionMachineLearning {
         System.out.println();
         scanner.close();
         
-        int populationSize = 24;
+        int initPopulationSize = 24;
         int maxAllowedMutations = 3;
+        int minOffSpring = 2;
+        int maxOffSpring = 4;
+
         int currentGeneration = 1;
 
-        populate(populationSize);
+        populate(initPopulationSize);
 
         for (Agent agent : populationList) {
             agent.calcFitness(targetString);
@@ -107,48 +129,19 @@ class evolutionMachineLearning {
 
         while (true) {
             // The position in populationList of the strings with the highest and the second highest accuracy
-            int highestAccuracyPos = 0;
-            int secondHighestAccuracyPos = 1;
-    
-            for (int i = 1; i < populationSize; i++) {
-                double currStrAccuracy = stringAccuracy(populationList.get(i));
-                double highestStrAccuracy = stringAccuracy(populationList.get(highestAccuracyPos));
-    
-                // If the current string's accuracy is higher than the highest accuracy string, highest and second highest accuracy will swap and currString will become the highest accuracy 
-                if (currStrAccuracy > highestStrAccuracy) {
-                    secondHighestAccuracyPos = highestAccuracyPos;
-                    highestAccuracyPos = i;
-    
-                    continue;
-                }
-    
-                double secondHighestStrAccuracy = stringAccuracy(populationList.get(secondHighestAccuracyPos));
-    
-                if (currStrAccuracy > secondHighestStrAccuracy) {
-                    secondHighestAccuracyPos = i;
+            for (int i = 0; i < populationList.size(); i++) {
+                if (populationList.get(i).advanceGeneration(0.25) == 1) {
+                    i--;
                 }
             }
-    
-            String bestFitString = populationList.get(highestAccuracyPos);
-            String secondBestFitString = populationList.get(secondHighestAccuracyPos);
-    
-            if (bestFitString.equals(targetString)) {
-                System.out.println("Generation " + currentGeneration + "'s best match: " + bestFitString);
-                System.out.println("Target string found in " + currentGeneration + " iterations");
 
-                // Exit loop when target is found
-                break;
+            ArrayList<Agent> parents = tournamentSelection(4);
+            for (int i = 0; i < parents.size(); i += 2) {
+                parents.get(i).breed(parents.get(i + 1), maxAllowedMutations, random.nextInt(minOffSpring, maxOffSpring));
             }
-            
-            ArrayList<String> newGeneration = new ArrayList<String>();
-            for (int i = 0; i < populationSize; i++) {
-                String childString = breedStrings(bestFitString, secondBestFitString, maxAllowedMutations);
-                newGeneration.add(childString);
-            }
-    
-            populationList = newGeneration;
-    
-            System.out.println("Generation " + currentGeneration + "'s best match: " + bestFitString);
+
+            System.out.println(populationList);
+            System.out.println("Generation " + currentGeneration + "'s best match: " + String.valueOf(evolutionMachineLearning.bestFitness(populationList).genes));
     
             currentGeneration++;
         }
@@ -174,7 +167,7 @@ class Agent {
         }
     }
 
-    public Agent(ArrayList<Agent> population, Agent parent1, Agent parent2, int maxMutations) {
+    private Agent(ArrayList<Agent> population, Agent parent1, Agent parent2, int maxMutations) {
         int midpoint = (int) Math.ceil((parent1.genes.length() / 2.0)); // Finds where the middle of string is, if the string is odd in size, then it will round up
 
         String startGenes = parent1.genes.substring(0, midpoint);
@@ -196,6 +189,22 @@ class Agent {
             this.population.add(new Agent(this.population, this, mate, maxMutations));
         }
 
+        this.die();
+        mate.die();
+
+        return 0; // Agent was able to breed successfully
+    }
+
+    public int breed(Agent mate, int maxMutations, int numOffspring, boolean dieWhenBreed) {
+        for (int i = 0; i < numOffspring; i++) {
+            this.population.add(new Agent(this.population, this, mate, maxMutations));
+        }
+
+        if (dieWhenBreed) {
+            this.die();
+            mate.die();
+        }
+
         return 0; // Agent was able to breed successfully
     }
 
@@ -203,7 +212,7 @@ class Agent {
         this.population.remove(this);
     }
 
-    public int advanceGeneration(int chanceOfDeath) {
+    public int advanceGeneration(double chanceOfDeath) {
         this.generationsAlive++;
 
         if (this.random.nextDouble() < chanceOfDeath) {
