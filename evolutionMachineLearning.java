@@ -131,14 +131,15 @@ class evolutionMachineLearning {
             // The position in populationList of the strings with the highest and the second highest accuracy
             
             ArrayList<Agent> parents = tournamentSelection(4);
-            for (int i = 0; i < parents.size() - 1; i += 2) {
-                parents.get(i).breed(parents.get(i + 1), maxAllowedMutations, random.nextInt(minOffSpring, maxOffSpring));
-            }
-            
+
             for (int i = 0; i < populationList.size(); i++) {
                 if (populationList.get(i).advanceGeneration(0.25) == 1) {
                     i--;
                 }
+            }
+
+            for (int i = 0; i < parents.size() - 1; i += 2) {
+                parents.get(i).breed(parents.get(i + 1), maxAllowedMutations, random.nextInt(minOffSpring, maxOffSpring));
             }
 
             System.out.println(random.nextInt(minOffSpring, maxOffSpring));
