@@ -76,7 +76,7 @@ class evolutionMachineLearning {
     // the most fit of each group becomes a parent. The function returns an array of parents.
     public static ArrayList<Agent> tournamentSelection(int numGroups) {
         if (numGroups <= 0) numGroups = 1;
-        if (numGroups > populationList.size()) numGroups = populationList.size();
+        if (numGroups > populationList.size()) return populationList;
 
         // Make sure numGroups is even
         if (numGroups % 2 != 0) numGroups++;
@@ -129,20 +129,25 @@ class evolutionMachineLearning {
 
         while (true) {
             // The position in populationList of the strings with the highest and the second highest accuracy
+            
+            ArrayList<Agent> parents = tournamentSelection(4);
+            for (int i = 0; i < parents.size() - 1; i += 2) {
+                parents.get(i).breed(parents.get(i + 1), maxAllowedMutations, random.nextInt(minOffSpring, maxOffSpring));
+            }
+            
             for (int i = 0; i < populationList.size(); i++) {
                 if (populationList.get(i).advanceGeneration(0.25) == 1) {
                     i--;
                 }
             }
 
-            ArrayList<Agent> parents = tournamentSelection(4);
-            for (int i = 0; i < parents.size(); i += 2) {
-                parents.get(i).breed(parents.get(i + 1), maxAllowedMutations, random.nextInt(minOffSpring, maxOffSpring));
-            }
-
+            System.out.println(random.nextInt(minOffSpring, maxOffSpring));
             System.out.println(populationList);
-            System.out.println("Generation " + currentGeneration + "'s best match: " + String.valueOf(evolutionMachineLearning.bestFitness(populationList).genes));
+            System.out.println(parents);
+            System.out.println("Generation " + currentGeneration + "'s best match: " + evolutionMachineLearning.bestFitness(populationList).genes);
     
+            if (evolutionMachineLearning.bestFitness(populationList).genes == targetString) break;
+            
             currentGeneration++;
         }
 
@@ -155,7 +160,7 @@ class Agent {
     ArrayList<Agent> population; // The population this agent is a part of
     int generationsAlive = 0; // How many generations has this agent lived through 
     
-    String genes;
+    String genes = "";
     double fitness;
     
 
@@ -168,6 +173,8 @@ class Agent {
     }
 
     private Agent(ArrayList<Agent> population, Agent parent1, Agent parent2, int maxMutations) {
+        this.population = population;
+
         int midpoint = (int) Math.ceil((parent1.genes.length() / 2.0)); // Finds where the middle of string is, if the string is odd in size, then it will round up
 
         String startGenes = parent1.genes.substring(0, midpoint);
