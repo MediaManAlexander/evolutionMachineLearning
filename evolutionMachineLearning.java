@@ -24,7 +24,7 @@ class evolutionMachineLearning {
 
     public static void populate(int populationSize) {
         for (int i = 0; i < populationSize; i++) {
-            populationList.add(new Agent(populationList, targetString.length()))
+            populationList.add(new Agent(populationList, targetString.length()));
         }
     }
 
@@ -41,6 +41,18 @@ class evolutionMachineLearning {
         }
 
         return (double) numCorrect / strSize;
+    }
+
+    public Agent bestFitness(ArrayList<Agent> agentList) {
+        Agent bestFit = agentList.get(0);
+
+        for (Agent agent : agentList) {
+            if (agent.fitness > bestFit.fitness) {
+                bestFit = agent;
+            }
+        }
+
+        return bestFit;
     }
 
     public static String breedStrings(String str1, String str2, int maxMutations) {
@@ -62,17 +74,14 @@ class evolutionMachineLearning {
 
     // This is a function for breeding methods which takes the population and splits it into groups,
     // the most fit of each group becomes a parent. The function returns an array of parents.
-    public Agent[] tournamentSelection(int numGroups) {
-        if (populationList.size() % numGroups == 0) {
-            Agent[] parents = new Agent[numGroups];
-            for (int i = 0; i < numGroups; i++) {
-                Agent bestFit = populationList.get(0);
-                for (int j = 1; j < populationList.size() / numGroups; j++) {
-                    if (populationList.get(populationList.size() / numGroups * i + j))
-                        populationList.
-                }
+    public ArrayList<Agent> tournamentSelection(int numGroups) {
+        int groupSize = Math.round(populationList.size() / numGroups);
+        if (populationList.size() % numGroups != 0) {
+            while (populationList.size() % groupSize != 0) {
+                groupSize++;
             }
         }
+        
     }
 
     
