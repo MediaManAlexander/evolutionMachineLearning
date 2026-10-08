@@ -114,7 +114,7 @@ class evolutionMachineLearning {
         System.out.println();
         scanner.close();
         
-        int initPopulationSize = 24;
+        int initPopulationSize = 4;
         int maxAllowedMutations = 3;
         int minOffSpring = 2;
         int maxOffSpring = 4;
@@ -129,7 +129,7 @@ class evolutionMachineLearning {
             ArrayList<Agent> parents = tournamentSelection(4);
 
             for (int i = 0; i < populationList.size(); i++) {
-                if (populationList.get(i).advanceGeneration(0.25) == 1) {
+                if (populationList.get(i).advanceGeneration(2) == 1) {
                     i--;
                 }
             }
@@ -141,7 +141,7 @@ class evolutionMachineLearning {
             System.out.println(random.nextInt(minOffSpring, maxOffSpring));
 
             for (Agent agent : parents) {
-                System.out.println(agent.fitness);
+                System.out.println(agent.genes);
             }
 
             System.out.println("Generation " + currentGeneration + "'s best match: " + evolutionMachineLearning.bestFitness(populationList).genes);
@@ -174,7 +174,7 @@ class Agent {
         this.calcFitness(evolutionMachineLearning.targetString);
     }
 
-    private Agent(ArrayList<Agent> population, Agent parent1, Agent parent2, int maxMutations) {
+    public Agent(ArrayList<Agent> population, Agent parent1, Agent parent2, int maxMutations) {
         this.population = population;
 
         int midpoint = (int) Math.ceil((parent1.genes.length() / 2.0)); // Finds where the middle of string is, if the string is odd in size, then it will round up
@@ -184,10 +184,12 @@ class Agent {
 
         String resultGenes = startGenes + endGenes;
 
-        for (int i = 0; i < this.random.nextInt(1, maxMutations); i++) {
-            int mutatedCharPos = random.nextInt(0, resultGenes.length());
-
-            resultGenes = evolutionMachineLearning.replaceCharInStr(resultGenes, evolutionMachineLearning.rngChar(), mutatedCharPos);
+        if (maxMutations > 0) {
+            for (int i = 0; i < this.random.nextInt(0, maxMutations); i++) {
+                int mutatedCharPos = random.nextInt(0, resultGenes.length());
+    
+                resultGenes = evolutionMachineLearning.replaceCharInStr(resultGenes, evolutionMachineLearning.rngChar(), mutatedCharPos);
+            }
         }
 
         this.genes = resultGenes;
@@ -223,14 +225,14 @@ class Agent {
         this.population.remove(this);
     }
 
-    public int advanceGeneration(double chanceOfDeath) {
-        this.generationsAlive++;
-
-        if (this.random.nextDouble() < chanceOfDeath) {
+    public int advanceGeneration(int maxLifespan) {
+        
+        if (this.generationsAlive > maxLifespan) {
             this.die();
             return 1; // Code for agent death
-        }
-
+        }  
+        this.generationsAlive++;
+        
         return 0; // Code for agent successfully making it to the next generation.
     }
 
