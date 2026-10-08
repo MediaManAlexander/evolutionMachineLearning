@@ -1,4 +1,5 @@
 import java.util.ArrayList;
+import java.util.Comparator;
 import java.util.Random;
 import java.util.Scanner;
 
@@ -45,12 +46,19 @@ class evolutionMachineLearning {
 
     public static Agent bestFitness(ArrayList<Agent> agentList) {
         Agent bestFit = agentList.get(0);
+        boolean variedFitness = false;
 
         for (Agent agent : agentList) {
             if (agent.fitness > bestFit.fitness) {
                 bestFit = agent;
             }
+            // Testing to see if there is any variation of fitness within the groups
+            if (!variedFitness && agent.fitness != bestFit.fitness) {
+                variedFitness = true;
+            }
         }
+
+        if (!variedFitness) return agentList.get(random.nextInt(0, agentList.size()));
 
         return bestFit;
     }
@@ -103,6 +111,27 @@ class evolutionMachineLearning {
         return parents;
     }
 
+    public static ArrayList<Agent> bestPerformersSelection(int numParentsReturn) {
+        ArrayList<Agent> sortedAgents = new ArrayList<Agent>();
+
+        for (Agent agent : populationList) {
+            sortedAgents.add(agent);
+        }
+
+        sortedAgents.sort((a, b) -> {
+            if (a.fitness < b.fitness) return -1;
+            else if (a.fitness > b.fitness) return 1;
+            else return 0;
+        });
+
+        ArrayList<Agent> returnList = new ArrayList<Agent>();
+        for (int i = 0; i < numParentsReturn; i++) {
+            returnList.add(sortedAgents.get(i));
+        }
+
+        return returnList;
+    }
+
     
 
     public static void main(String[] args) {
@@ -126,7 +155,7 @@ class evolutionMachineLearning {
         while (true) {
             // The position in populationList of the strings with the highest and the second highest accuracy
             
-            ArrayList<Agent> parents = tournamentSelection(4);
+            ArrayList<Agent> parents = bestPerformersSelection(2);
 
             for (int i = 0; i < populationList.size(); i++) {
                 if (populationList.get(i).advanceGeneration(2) == 1) {
@@ -138,15 +167,13 @@ class evolutionMachineLearning {
                 parents.get(i).breed(parents.get(i + 1), maxAllowedMutations, random.nextInt(minOffSpring, maxOffSpring));
             }
 
-            System.out.println(random.nextInt(minOffSpring, maxOffSpring));
-
             for (Agent agent : parents) {
                 System.out.println(agent.genes);
             }
 
             System.out.println("Generation " + currentGeneration + "'s best match: " + evolutionMachineLearning.bestFitness(populationList).genes);
     
-            if (evolutionMachineLearning.bestFitness(populationList).genes == targetString) break;
+            if (evolutionMachineLearning.bestFitness(populationList).genes.equals(targetString)) break;
             
             currentGeneration++;
         }
