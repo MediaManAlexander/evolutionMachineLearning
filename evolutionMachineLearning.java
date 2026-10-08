@@ -123,10 +123,6 @@ class evolutionMachineLearning {
 
         populate(initPopulationSize);
 
-        for (Agent agent : populationList) {
-            agent.calcFitness(targetString);
-        }
-
         while (true) {
             // The position in populationList of the strings with the highest and the second highest accuracy
             
@@ -143,8 +139,11 @@ class evolutionMachineLearning {
             }
 
             System.out.println(random.nextInt(minOffSpring, maxOffSpring));
-            System.out.println(populationList);
-            System.out.println(parents);
+
+            for (Agent agent : parents) {
+                System.out.println(agent.fitness);
+            }
+
             System.out.println("Generation " + currentGeneration + "'s best match: " + evolutionMachineLearning.bestFitness(populationList).genes);
     
             if (evolutionMachineLearning.bestFitness(populationList).genes == targetString) break;
@@ -171,6 +170,8 @@ class Agent {
         for (int j = 0; j < geneLen; j++) {
             this.genes += evolutionMachineLearning.rngChar();
         }
+
+        this.calcFitness(evolutionMachineLearning.targetString);
     }
 
     private Agent(ArrayList<Agent> population, Agent parent1, Agent parent2, int maxMutations) {
@@ -190,6 +191,8 @@ class Agent {
         }
 
         this.genes = resultGenes;
+
+        this.calcFitness(evolutionMachineLearning.targetString);
     }
 
     public int breed(Agent mate, int maxMutations, int numOffspring) {
@@ -242,7 +245,7 @@ class Agent {
             }
         }
 
-        fitness = (double) numCorrect / strSize;
+        this.fitness = (double) numCorrect / strSize;
     }
 
     public void reconstructGenes(int newGeneLen) {
