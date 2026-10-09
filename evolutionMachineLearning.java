@@ -157,10 +157,12 @@ class evolutionMachineLearning {
             
             ArrayList<Agent> parents = bestPerformersSelection(2);
 
-            for (int i = 0; i < populationList.size(); i++) {
-                if (populationList.get(i).advanceGeneration(2) == 1) {
-                    i--;
-                }
+            for (int i = 0; i < populationList.size(); i+=0) {
+                // if (populationList.get(i).advanceGeneration(1) == 1) {
+                //     i--;
+                // }
+
+                populationList.get(i).die();
             }
 
             for (int i = 0; i < parents.size() - 1; i += 2) {
