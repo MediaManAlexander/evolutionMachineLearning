@@ -25,7 +25,7 @@ class evolutionMachineLearning {
 
     public static void populate(int populationSize) {
         for (int i = 0; i < populationSize; i++) {
-            populationList.add(new Agent(populationList, targetString.length()));
+            populationList.add(new Agent(targetString));
         }
     }
 
@@ -155,27 +155,22 @@ class evolutionMachineLearning {
         while (true) {
             // The position in populationList of the strings with the highest and the second highest accuracy
             
-            ArrayList<Agent> parents = bestPerformersSelection(2);
+            ArrayList<Agent> parents = bestPerformersSelection(4);
 
-            for (int i = 0; i < populationList.size(); i+=0) {
-                // if (populationList.get(i).advanceGeneration(1) == 1) {
-                //     i--;
-                // }
-
-                populationList.get(i).die();
-            }
+            ArrayList<Agent> newPopulation = new ArrayList<Agent>();
 
             for (int i = 0; i < parents.size() - 1; i += 2) {
-                parents.get(i).breed(parents.get(i + 1), maxAllowedMutations, random.nextInt(minOffSpring, maxOffSpring));
+                for (Agent child : parents.get(i).breed(parents.get(i + 1), maxAllowedMutations, random.nextInt(minOffSpring, maxOffSpring), targetString)) {
+                    newPopulation.add(child);
+                }
             }
 
-            for (Agent agent : parents) {
-                System.out.println(agent.genes);
-            }
-
+            
             System.out.println("Generation " + currentGeneration + "'s best match: " + evolutionMachineLearning.bestFitness(populationList).genes);
-    
+            
             if (evolutionMachineLearning.bestFitness(populationList).genes.equals(targetString)) break;
+
+            populationList = newPopulation;
             
             currentGeneration++;
         }
@@ -230,31 +225,10 @@ class Agent {
             offSpring[i] = new Agent(this, mate, maxMutations, targetString);
         }
 
-        this.die();
-        mate.die();
-
-        return offSpring;
-    }
-
-    public Agent[] breed(Agent mate, int maxMutations, int numOffspring, String targetString, boolean dieWhenBreed) {
-        Agent[] offSpring = new Agent[numOffspring];
-
-        for (int i = 0; i < numOffspring; i++) {
-            offSpring[i] = new Agent(this, mate, maxMutations, targetString);
-        }
-
-        this.die();
-        mate.die();
-
         return offSpring;
     }
 
     public int advanceGeneration(int maxLifespan) {
-        
-        if (this.generationsAlive > maxLifespan) {
-            this.die();
-            return 1; // Code for agent death
-        }  
         this.generationsAlive++;
         
         return 0; // Code for agent successfully making it to the next generation.
@@ -274,8 +248,8 @@ class Agent {
         this.fitness = (double) numCorrect / strSize;
     }
 
-    public void reconstructGenes(int newGeneLen) {
-        for (int j = 0; j < newGeneLen; j++) {
+    public void reconstructGenes(String newTargetString) {
+        for (int j = 0; j < newTargetString.length(); j++) {
             this.genes += evolutionMachineLearning.rngChar();
         }
     }
