@@ -145,8 +145,8 @@ class evolutionMachineLearning {
         
         int initPopulationSize = 26;
         int maxAllowedMutations = 5;
-        int minOffSpring = 2;
-        int maxOffSpring = 4;
+        int minOffSpring = 25;
+        int maxOffSpring = 26;
 
         int currentGeneration = 1;
 
@@ -155,7 +155,7 @@ class evolutionMachineLearning {
         while (true) {
             // The position in populationList of the strings with the highest and the second highest accuracy
             
-            ArrayList<Agent> parents = bestPerformersSelection(20);
+            ArrayList<Agent> parents = bestPerformersSelection(2);
 
             ArrayList<Agent> newPopulation = new ArrayList<Agent>();
 
