@@ -119,8 +119,8 @@ class evolutionMachineLearning {
         }
 
         sortedAgents.sort((a, b) -> {
-            if (a.fitness < b.fitness) return -1;
-            else if (a.fitness > b.fitness) return 1;
+            if (a.fitness > b.fitness) return -1;
+            else if (a.fitness < b.fitness) return 1;
             else return 0;
         });
 
@@ -143,8 +143,8 @@ class evolutionMachineLearning {
         System.out.println();
         scanner.close();
         
-        int initPopulationSize = 4;
-        int maxAllowedMutations = 3;
+        int initPopulationSize = 26;
+        int maxAllowedMutations = 5;
         int minOffSpring = 2;
         int maxOffSpring = 4;
 
@@ -155,7 +155,7 @@ class evolutionMachineLearning {
         while (true) {
             // The position in populationList of the strings with the highest and the second highest accuracy
             
-            ArrayList<Agent> parents = bestPerformersSelection(4);
+            ArrayList<Agent> parents = bestPerformersSelection(20);
 
             ArrayList<Agent> newPopulation = new ArrayList<Agent>();
 
@@ -184,6 +184,7 @@ class Agent {
     int generationsAlive = 0; // How many generations has this agent lived through 
     
     String genes = "";
+    String targetGenes = "";
     double fitness;
     
 
@@ -193,7 +194,17 @@ class Agent {
             this.genes += evolutionMachineLearning.rngChar();
         }
 
-        this.calcFitness(targetString);
+        this.targetGenes = targetString;
+
+        this.calcFitness();
+    }
+
+    public Agent(String targetString, String genes) {
+        this.targetGenes = targetString;
+
+        this.genes = genes;
+
+        this.calcFitness();
     }
 
     public Agent(Agent parent1, Agent parent2, int maxMutations, String targetString) {
@@ -215,7 +226,9 @@ class Agent {
 
         this.genes = resultGenes;
 
-        this.calcFitness(targetString);
+        this.targetGenes = targetString;
+
+        this.calcFitness();
     }
 
     public Agent[] breed(Agent mate, int maxMutations, int numOffspring, String targetString) {
@@ -234,13 +247,13 @@ class Agent {
         return 0; // Code for agent successfully making it to the next generation.
     }
 
-    public void calcFitness(String target) {
-        int strSize = target.length();
+    public void calcFitness() {
+        int strSize = this.targetGenes.length();
         int numCorrect = 0;
 
         for (int i = 0; i < strSize; i++) {
 
-            if (this.genes.charAt(i) == target.charAt(i)) {
+            if (this.genes.charAt(i) == this.targetGenes.charAt(i)) {
                 numCorrect++;
             }
         }
@@ -252,5 +265,17 @@ class Agent {
         for (int j = 0; j < newTargetString.length(); j++) {
             this.genes += evolutionMachineLearning.rngChar();
         }
+    }
+
+    public void setGenes(String newGenes) {
+        this.genes = newGenes;
+
+        this.calcFitness();
+    }
+
+    public void setTargetGenes(String newTargetGenes) {
+        this.targetGenes = newTargetGenes;
+
+        this.calcFitness();
     }
 }
