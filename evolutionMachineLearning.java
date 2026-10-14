@@ -186,25 +186,22 @@ class evolutionMachineLearning {
 class Agent {
     Random random = new Random();
 
-    ArrayList<Agent> population; // The population this agent is a part of
     int generationsAlive = 0; // How many generations has this agent lived through 
     
     String genes = "";
     double fitness;
     
 
-    public Agent(ArrayList<Agent> population, int geneLen) {
-        this.population = population;
+    public Agent(String targetString) {
 
-        for (int j = 0; j < geneLen; j++) {
+        for (int j = 0; j < targetString.length(); j++) {
             this.genes += evolutionMachineLearning.rngChar();
         }
 
-        this.calcFitness(evolutionMachineLearning.targetString);
+        this.calcFitness(targetString);
     }
 
-    public Agent(ArrayList<Agent> population, Agent parent1, Agent parent2, int maxMutations) {
-        this.population = population;
+    public Agent(Agent parent1, Agent parent2, int maxMutations, String targetString) {
 
         int midpoint = (int) Math.ceil((parent1.genes.length() / 2.0)); // Finds where the middle of string is, if the string is odd in size, then it will round up
 
@@ -223,35 +220,33 @@ class Agent {
 
         this.genes = resultGenes;
 
-        this.calcFitness(evolutionMachineLearning.targetString);
+        this.calcFitness(targetString);
     }
 
-    public int breed(Agent mate, int maxMutations, int numOffspring) {
+    public Agent[] breed(Agent mate, int maxMutations, int numOffspring, String targetString) {
+        Agent[] offSpring = new Agent[numOffspring];
+
         for (int i = 0; i < numOffspring; i++) {
-            this.population.add(new Agent(this.population, this, mate, maxMutations));
+            offSpring[i] = new Agent(this, mate, maxMutations, targetString);
         }
 
         this.die();
         mate.die();
 
-        return 0; // Agent was able to breed successfully
+        return offSpring;
     }
 
-    public int breed(Agent mate, int maxMutations, int numOffspring, boolean dieWhenBreed) {
+    public Agent[] breed(Agent mate, int maxMutations, int numOffspring, String targetString, boolean dieWhenBreed) {
+        Agent[] offSpring = new Agent[numOffspring];
+
         for (int i = 0; i < numOffspring; i++) {
-            this.population.add(new Agent(this.population, this, mate, maxMutations));
+            offSpring[i] = new Agent(this, mate, maxMutations, targetString);
         }
 
-        if (dieWhenBreed) {
-            this.die();
-            mate.die();
-        }
+        this.die();
+        mate.die();
 
-        return 0; // Agent was able to breed successfully
-    }
-
-    public void die() {
-        this.population.remove(this);
+        return offSpring;
     }
 
     public int advanceGeneration(int maxLifespan) {
